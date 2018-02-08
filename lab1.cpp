@@ -9,6 +9,7 @@ using namespace std;
 class Point {
 private:
 	vector<float> coordinates;
+	int label;
 
 public:
 	Point(vector<float>& coordinates) {
@@ -59,7 +60,7 @@ vector<Point> randomCentroids(vector<Point> points, int k) {
 					break;
 				}
 			}
-			
+
 			retval.push_back(points[index]);
 			Cluster cluster(i, points[index]);
 			break;
@@ -70,9 +71,39 @@ vector<Point> randomCentroids(vector<Point> points, int k) {
 }
 
 
-// vector<Cluster> findNearestCentroids(vector<Point> points, vector<Point> centroids) {
+void findNearestCentroids(vector<Point> points, vector<Point> centroids) {
+	int total_points = points.size();
+	int total_coordinates = points.getDimensionsCount();
 
-// }
+	for (int i = 0; i < total; i++) {
+		Point curr_point = points[i];
+
+		float sum_diff = 0;
+		float min;
+
+		for (int j = 0; j < total_coordinates; j++) {
+			sum_diff += pow(clusters[0].location[j] - curr_point.coordinates[j], 2.0);
+		}
+
+		min = sqrt(sum);
+
+		for (int j = 1; j < k; j++) {
+			float dist;
+			float sum = 0;
+
+			for(int m = 0; m < total_coordinates; m++) {
+				sum += pow(clusters[j].location[m] - curr_point.coordinates[m], 2.0);
+			}
+
+			dist = sqrt(sum);
+
+			if(min > dist) {
+				min = dist;
+				curr_point.label = i;
+			}
+		}
+	}
+}
 
 
 int main (int argc, char **argv) {
