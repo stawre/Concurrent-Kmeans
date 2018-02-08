@@ -2,6 +2,78 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <vector>
+
+using namespace std;
+
+class Point {
+private:
+	vector<float> coordinates;
+
+public:
+	Point(vector<float>& coordinates) {
+		int size = coordinates.size();
+		for(int i = 0; i < size; i++) {
+			this->coordinates.push_back(coordinates[i]);
+		}
+	}
+
+	float getCoordinate(int index) {
+		return coordinates[index];
+	}
+
+	float getDimensionsCount() {
+		return coordinates.size();
+	}
+};
+
+class Cluster {
+private:
+	int label;
+	vector<Point> points;
+	vector<float> location;
+
+public:
+	Cluster(int label, Point point) {
+		this->label = label;
+		int count = point.getDimensionsCount();
+		for(int i = 0; i < count; i++) {
+			location.push_back(point.getCoordinate(i));
+		}
+		points.push_back(point);
+	}
+
+	Point getPoint(int index) {
+		return points[index];
+	}
+};
+
+vector<Point> randomCentroids(vector<Point> points, int k) {
+	vector<Point> retval;
+
+	for(int i = 0; i < k; i++) {
+		while (1) {
+			int index = rand() % points.size();
+			if (i > 0) {
+				if (retval[i-1] == points[i]) {
+					break;
+				}
+			}
+			
+			retval.push_back(points[index]);
+			Cluster cluster(i, points[index]);
+			break;
+		}
+	}
+
+	return retval;
+}
+
+
+// vector<Cluster> findNearestCentroids(vector<Point> points, vector<Point> centroids) {
+
+// }
+
 
 int main (int argc, char **argv) {
 	int c;
