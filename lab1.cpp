@@ -105,6 +105,22 @@ void findNearestCentroids(vector<Point> points, vector<Point> centroids) {
 	}
 }
 
+vector<Point> averageLabelCentroids(vector<Point> points, vector<Cluster> clusters) {
+	int total_points = points.size();
+
+	for (int i = 0; i < k; i++) {
+		for (int j = 0; j < total_points; j++) {
+			float sum = 0;
+			int cluster_points = clusters[i].points.size();
+
+			for (m = 0; m < total_points; m++) {
+				sum += clusters[i].points[m].getCoordinate(j);
+			}
+			clusters[i]
+		}
+	}
+}
+
 
 int main (int argc, char **argv) {
 	int c;
