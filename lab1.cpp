@@ -20,7 +20,7 @@ char* input;
 class Point {
 private:
 	int id;
-	int centroid_id;
+	int centroid_id = -1;
 	vector<float> coordinates;
 
 public:
@@ -175,6 +175,7 @@ void findNearestCentroids(vector<Point> points, vector<Centroid> centroids) {
 				min = dist;
 				if (curr_point.getCentroid() != -1) {
 					int temp = curr_point.getCentroid();
+					printf("Here\n");
 					centroids[temp].erasePoint(curr_point.getId());
 				}
 				centroids[j].addPoint(curr_point);
