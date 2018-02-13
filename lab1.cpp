@@ -102,6 +102,8 @@ vector<Centroid> randomCentroids(vector<Point> points, int k) {
 void findNearestCentroids(vector<Point> points, vector<Centroid> centroids) {
 	int total_points = points.size();
 	int total_coordinates = points[1].getDimensionsCount();
+	printf("Total Points: %d\n", total_points);
+	printf("Total Coordinates: %d\n", total_coordinates);
 
 	for (int i = 0; i < total_points; i++) {
 		Point curr_point = points[i];
@@ -110,7 +112,9 @@ void findNearestCentroids(vector<Point> points, vector<Centroid> centroids) {
 		float min;
 
 		for (int j = 0; j < total_coordinates; j++) {
+			printf("Pow: %f %f\n", centroids[0].getCoordinate(j), curr_point.getCoordinate(j));
 			sum_diff += pow(centroids[0].getCoordinate(j) - curr_point.getCoordinate(j), 2.0);
+			printf("Sum: %f", sum_diff);
 		}
 
 		min = sqrt(sum_diff);
@@ -136,26 +140,26 @@ void findNearestCentroids(vector<Point> points, vector<Centroid> centroids) {
 vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> centroids) {
 	int d = centroids[1].getD();
 	int total_points = centroids[1].getSize();
-	printf("%d\n", total_points);
+	// printf("%d\n", total_points);
 	vector<Centroid> retval;
 
-	printf("%f \n", centroids[0].getCoordinate(0));
+	// printf("%f \n", centroids[0].getCoordinate(0));
 
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < d; j++) {
 			float sum = 0;
 			for (int m = 0; m < total_points; m++) {
 				Point p = centroids[i].getPoint(m);
-				printf("%f + ", p.getCoordinate(j));
+				// printf("%f + ", p.getCoordinate(j));
 				sum = sum + p.getCoordinate(j);
 			}
-			printf("= %f\n", sum);
+			// printf("= %f\n", sum);
 			centroids[i].setCoordinate(j, sum / total_points);
 		}
 		retval.push_back(centroids[i]);
 	}
 
-	printf("%f \n", centroids[0].getCoordinate(0));
+	// printf("%f \n", centroids[0].getCoordinate(0));
 
 	return retval;
 }
