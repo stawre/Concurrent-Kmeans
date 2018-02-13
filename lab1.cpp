@@ -19,11 +19,14 @@ char* input;
 
 class Point {
 private:
+	int id;
+	int centroid_id;
 	vector<float> coordinates;
 
 public:
 
-	Point(vector<float>& coordinates) {
+	Point(int id, int centroid_id, vector<float>& coordinates) {
+		this->id = id;
 		int size = coordinates.size();
 		for(int i = 0; i < size; i++) {
 			this->coordinates.push_back(coordinates[i]);
@@ -37,15 +40,29 @@ public:
 	float getCoordinate(int index) {
 		return coordinates[index];
 	}
+
+	int getId() {
+		return id;
+	}
+
+	int getCentroid() {
+		return centroid_id;
+	}
+
+	int setCentroid(int centroid_id) {
+		this->centroid_id = centroid_id;
+	}
 };
 
 class Centroid {
 private:
+	int id;
 	vector<Point> points;
 	vector<float> coordinates;
 
 public:
-	Centroid(Point point) {
+	Centroid(int id, Point point) {
+		this->id = id;
 		int count = point.getDimensionsCount();
 		for(int i = 0; i < count; i++) {
 			coordinates.push_back(point.getCoordinate(i));
@@ -78,19 +95,40 @@ public:
 	int getD() {
 		return coordinates.size();
 	}
+
+	int getId() {
+		return id;
+	}
+
+	bool erasePoint(int id)
+	{
+		int size = points.size();
+
+		for(int i = 0; i < size; i++)
+		{
+			if(points[i].getId() == id)
+			{
+				points.erase(points.begin() + i);
+				return true;
+			}
+		}
+		return false;
+	}
+
 };
 
 vector<Centroid> randomCentroids(vector<Point> points, int k) {
 	vector<Centroid> retval;
 	int size = points.size();
 	vector<int> cache;
-
+	int id = 0;
 	for (int i = 1; i < k + 1; i++) {
 		LOOP:
 		int x = rand() % (size - 1) + 1;
 		if (find(cache.begin(), cache.end(), x) != cache.end())
 			goto LOOP;
-		Centroid centroid(points[x]);
+		Centroid centroid(id, points[x]);
+		id++;
 		retval.push_back(centroid);
 		// printf("%f\n", retval[i-1].getCoordinate(0));
 	}
@@ -135,7 +173,12 @@ void findNearestCentroids(vector<Point> points, vector<Centroid> centroids) {
 
 			if(min > dist) {
 				min = dist;
+				if (curr_point.getCentroid() != -1) {
+					int temp = curr_point.getCentroid();
+					centroids[temp].erasePoint(curr_point.getId());
+				}
 				centroids[j].addPoint(curr_point);
+				curr_point.setCentroid(j);
 			}
 			printf("Final Min: %f\n", min);
 		}
@@ -293,22 +336,24 @@ int main (int argc, char **argv) {
         // printf("\n");
 	}
 	// printf("D: %d\n", d);
-	Point point(coordinates);
+	int id = 0;
+	Point point(id, coordinates);
+	id++;
+  dataset.push_back(point);
+  int i = d;
+  while (i < d*rows) {
+	vector<float> c;
+
+  	for (int j = i; j < (i + d); j++) {
+    	c.push_back(dataset[0].getCoordinate(j));
+    }
+
+    Point point(id, c);
+		id++;
     dataset.push_back(point);
 
-    int i = d;
-    while (i < d*rows) {
-		vector<float> c;
-
-    	for (int j = i; j < (i + d); j++) {
-	    	c.push_back(dataset[0].getCoordinate(j));
-	    }
-
-	    Point point(c);
-	    dataset.push_back(point);
-
-	    i += 4;
-    }
+    i += 4;
+  }
 
 	Point x = dataset[0];
 	float y = x.getCoordinate(0);
