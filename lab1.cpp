@@ -136,6 +136,7 @@ void findNearestCentroids(vector<Point> points, vector<Centroid> centroids) {
 vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> centroids) {
 	int d = centroids[1].getD();
 	int total_points = centroids[1].getSize();
+	printf("%d\n", total_points);
 	vector<Centroid> retval;
 
 	printf("%f \n", centroids[0].getCoordinate(0));
