@@ -25,7 +25,7 @@ private:
 
 public:
 
-	Point(int id, int centroid_id, vector<float>& coordinates) {
+	Point(int id, vector<float> coordinates) {
 		this->id = id;
 		int size = coordinates.size();
 		for(int i = 0; i < size; i++) {
@@ -337,7 +337,7 @@ int main (int argc, char **argv) {
 	}
 	// printf("D: %d\n", d);
 	int id = 0;
-	Point point(id, *coordinates);
+	Point point(id, coordinates);
 	id++;
   dataset.push_back(point);
   int i = d;
@@ -348,7 +348,7 @@ int main (int argc, char **argv) {
     	c.push_back(dataset[0].getCoordinate(j));
     }
 
-    Point point(id, *c);
+    Point point(id, c);
 		id++;
     dataset.push_back(point);
 
