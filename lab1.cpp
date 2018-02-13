@@ -92,7 +92,7 @@ vector<Centroid> randomCentroids(vector<Point> points, int k) {
 			goto LOOP;
 		Centroid centroid(points[x]);
 		retval.push_back(centroid);
-		printf("%f\n", retval[i-1].getCoordinate(0));
+		// printf("%f\n", retval[i-1].getCoordinate(0));
 	}
 
 	return retval;
@@ -147,7 +147,8 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 				Point p = centroids[i].getPoint(m);
 				sum += p.getCoordinate(j);
 			}
-			centroids[i].setCoordinate(j, sum / total_points);
+			centroids[i].setCoordinate(j, sum / total_
+				points);
 		}
 		retval.push_back(centroids[i]);
 	}
