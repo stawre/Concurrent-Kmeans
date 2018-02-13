@@ -138,6 +138,8 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 	int total_points = centroids[1].getSize();
 	vector<Centroid> retval;
 
+	printf("%f \n", centroids[0].getCoordinate(0));
+
 	for (int i = 0; i < k; i++) {
 		for (int j = 0; j < d; j++) {
 			float sum = 0;
@@ -149,6 +151,8 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 		}
 		retval.push_back(centroids[i]);
 	}
+
+	printf("%f \n", centroids[0].getCoordinate(0));
 
 	return retval;
 }
@@ -164,7 +168,6 @@ bool converged(vector<Centroid> centroids, vector<Centroid> old_centroids) {
 				return false;
 		}
 	}
-
 	return true;
 }
 
@@ -256,7 +259,7 @@ int main (int argc, char **argv) {
 
 	inFile >> rows;
 
-	printf("Rows: %d\n", rows);
+	// printf("Rows: %d\n", rows);
 
 	vector<Point> dataset;
 			vector<float> coordinates;
@@ -272,12 +275,12 @@ int main (int argc, char **argv) {
         {
         	d++;
         	x = stof(s);
-        	printf("%f ", x);
+        	// printf("%f ", x);
             coordinates.push_back(x);
         }
-        printf("\n");
+        // printf("\n");
 	}
-	printf("D: %d\n", d);
+	// printf("D: %d\n", d);
 	Point point(coordinates);
     dataset.push_back(point);
 
@@ -297,14 +300,14 @@ int main (int argc, char **argv) {
 
 	Point x = dataset[0];
 	float y = x.getCoordinate(0);
-	printf("Here\n");
+	// printf("Here\n");
 
-	for (int a = 0; a < rows; a++) {
-			printf("%f %f %f %f\n", dataset[a].getCoordinate(0),
-				dataset[a].getCoordinate(1), dataset[a].getCoordinate(2),
-				dataset[a].getCoordinate(3));
-
-	}
+	// for (int a = 0; a < rows; a++) {
+	// 		printf("%f %f %f %f\n", dataset[a].getCoordinate(0),
+	// 			dataset[a].getCoordinate(1), dataset[a].getCoordinate(2),
+	// 			dataset[a].getCoordinate(3));
+  //
+	// }
 
 	kmeans(dataset, k);
 }
