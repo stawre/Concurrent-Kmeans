@@ -146,9 +146,9 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 			for (int m = 0; m < total_points; m++) {
 				Point p = centroids[i].getPoint(m);
 				printf("%f + ", p.getCoordinate(j));
-				sum += p.getCoordinate(j);
-				printf("= %f\n", sum);
+				sum = sum + p.getCoordinate(j);
 			}
+			printf("= %f\n", sum);
 			centroids[i].setCoordinate(j, sum / total_points);
 		}
 		retval.push_back(centroids[i]);
