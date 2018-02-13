@@ -125,7 +125,7 @@ void findNearestCentroids(vector<Point> points, vector<Centroid> centroids) {
 			float sum = 0;
 
 			for(int m = 0; m < total_coordinates; m++) {
-				printf("Pow: %f %f\n", centroids[0].getCoordinate(j), curr_point.getCoordinate(j));
+				printf("Pow: %f %f\n", centroids[j].getCoordinate(m), curr_point.getCoordinate(m));
 				sum += pow(centroids[j].getCoordinate(m) - curr_point.getCoordinate(m), 2.0);
 				printf("Sum: %f\n", sum);
 			}
