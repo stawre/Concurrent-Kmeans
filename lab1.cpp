@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 
@@ -81,7 +82,7 @@ public:
 
 vector<Centroid> randomCentroids(vector<Point> points, int k) {
 	vector<Centroid> retval;
-	int size = points.getSize();
+	int size = points.size();
 	vector<int> cache;
 
 	for (int i = 1; i < k + 1; i++) {
