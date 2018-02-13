@@ -81,9 +81,15 @@ public:
 
 vector<Centroid> randomCentroids(vector<Point> points, int k) {
 	vector<Centroid> retval;
+	int size = points.getSize();
+	vector<int> cache;
 
 	for (int i = 1; i < k + 1; i++) {
-		Centroid centroid(points[i]);
+		LOOP:
+		int x = rand() % (size - 1) + 1;
+		if (find(cache.begin(), cache.end(), x) != cache.end())
+			goto LOOP;
+		Centroid centroid(points[x]);
 		retval.push_back(centroid);
 		printf("%f\n", retval[i-1].getCoordinate(0));
 	}
@@ -173,8 +179,8 @@ void kmeans(vector<Point> dataset, int k) {
 		old_centroids = centroids;
 		iters++;
 
-		findNearestCentroids(dataset, centroids);		
-		centroids = averageLabeledCentroids(dataset, centroids);		
+		findNearestCentroids(dataset, centroids);
+		centroids = averageLabeledCentroids(dataset, centroids);
 
 		if (iterations > 0) {
 			done = iters > iterations || converged(centroids, old_centroids);
@@ -293,8 +299,8 @@ int main (int argc, char **argv) {
 	printf("Here\n");
 
 	for (int a = 0; a < rows; a++) {
-			printf("%f %f %f %f\n", dataset[a].getCoordinate(0), 
-				dataset[a].getCoordinate(1), dataset[a].getCoordinate(2), 
+			printf("%f %f %f %f\n", dataset[a].getCoordinate(0),
+				dataset[a].getCoordinate(1), dataset[a].getCoordinate(2),
 				dataset[a].getCoordinate(3));
 
 	}
