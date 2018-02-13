@@ -141,8 +141,8 @@ vector<Centroid> randomCentroids(vector<Point> points, int k) {
 void findNearestCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 	int total_points = points.size();
 	int total_coordinates = points[1].getDimensionsCount();
-	printf("Total Points: %d\n", total_points);
-	printf("Total Coordinates: %d\n", total_coordinates);
+	// printf("Total Points: %d\n", total_points);
+	// printf("Total Coordinates: %d\n", total_coordinates);
 
 	for (int i = 0; i < total_points; i++) {
 		Point curr_point = points[i];
@@ -151,34 +151,34 @@ void findNearestCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 		float min;
 
 		for (int j = 0; j < total_coordinates; j++) {
-			printf("Pow: %f %f\n", centroids[0].getCoordinate(j), curr_point.getCoordinate(j));
+			// printf("Pow: %f %f\n", centroids[0].getCoordinate(j), curr_point.getCoordinate(j));
 			sum_diff += pow(centroids[0].getCoordinate(j) - curr_point.getCoordinate(j), 2.0);
-			printf("Sum: %f\n", sum_diff);
+			// printf("Sum: %f\n", sum_diff);
 		}
 
 		min = sqrt(sum_diff);
-		printf("Min: %f\n", min);
+		// printf("Min: %f\n", min);
 
 		for (int j = 1; j < k; j++) {
 			float dist;
 			float sum = 0;
 
 			for(int m = 0; m < total_coordinates; m++) {
-				printf("Pow: %f %f\n", centroids[j].getCoordinate(m), curr_point.getCoordinate(m));
+				// printf("Pow: %f %f\n", centroids[j].getCoordinate(m), curr_point.getCoordinate(m));
 				sum += pow(centroids[j].getCoordinate(m) - curr_point.getCoordinate(m), 2.0);
-				printf("Sum: %f\n", sum);
+				// printf("Sum: %f\n", sum);
 			}
 
 			dist = sqrt(sum);
-			printf("Dist: %f\n", dist);
+			// printf("Dist: %f\n", dist);
 
 			if(min > dist) {
 				min = dist;
 				if (curr_point.getCentroid() != -1) {
 					int temp = curr_point.getCentroid();
-					printf("Here\n");
+					// printf("Here\n");
 					if (centroids[temp].erasePoint(curr_point.getId()))
-						printf("Removed\n");
+						// printf("Removed\n");
 				}
 				centroids[j].addPoint(curr_point);
 				curr_point.setCentroid(j);
@@ -186,9 +186,9 @@ void findNearestCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 				centroids[0].addPoint(curr_point);
 				curr_point.setCentroid(0);
 			}
-			printf("Final Min: %f\n", min);
+			// printf("Final Min: %f\n", min);
 		}
-		printf("Centroid size: %d\n", centroids[0].getSize());
+		// printf("Centroid size: %d\n", centroids[0].getSize());
 	}
 }
 
@@ -202,7 +202,7 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 
 	for (int i = 0; i < k; i++) {
 		int total_points = centroids[i].getSize();
-		printf("Total Points: %d\n", total_points);
+		// printf("Total Points: %d\n", total_points);
 		for (int j = 0; j < d; j++) {
 			float sum = 0;
 			for (int m = 0; m < total_points; m++) {
@@ -210,7 +210,7 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 				// printf("%f + ", p.getCoordinate(j));
 				sum = sum + p.getCoordinate(j);
 			}
-			printf("Coordinate: %f\n", sum / total_points);
+			// printf("Coordinate: %f\n", sum / total_points);
 			centroids[i].setCoordinate(j, sum / total_points);
 		}
 		retval.push_back(centroids[i]);
@@ -228,7 +228,7 @@ bool converged(vector<Centroid> centroids, vector<Centroid> old_centroids) {
 	for (int i = 0; i < total; i++) {
 		for (int j = 0; j < d; j++) {
 			diff = abs(centroids[i].getCoordinate(j) - old_centroids[i].getCoordinate(j));
-			printf("Diff: %f\n", diff);
+			// printf("Diff: %f\n", diff);
 			if (diff > threshold)
 				return false;
 		}
@@ -243,13 +243,13 @@ void kmeans(vector<Point> dataset, int k) {
 	vector<Centroid> old_centroids;
 
 	bool done = false;
-	for (int i = 0; i < k; i++) {
-                printf("Cluster %d center: ", i);
-                for (int j = 0; j < 4; j++) {
-                        printf("%f ", centroids[i].getCoordinate(j));
-                }
-                printf("\n");
-        }
+	// for (int i = 0; i < k; i++) {
+  //               printf("Cluster %d center: ", i);
+  //               for (int j = 0; j < 4; j++) {
+  //                       printf("%f ", centroids[i].getCoordinate(j));
+  //               }
+  //               printf("\n");
+  //       }
 
 	while (!done) {
 		old_centroids = centroids;
@@ -264,8 +264,8 @@ void kmeans(vector<Point> dataset, int k) {
 			done = converged(centroids, old_centroids);
 		}
 	}
-	
-	printf("Centroid 0 size %d", centroids[0].getSize());
+
+	// printf("Centroid 0 size %d", centroids[0].getSize());
 	printf("Converged in %d iterations\n", iters);
 
 	int d = centroids[0].getD();
@@ -351,9 +351,7 @@ int main (int argc, char **argv) {
         	// printf("%f ", x);
             coordinates.push_back(x);
         }
-        // printf("\n");
 	}
-	// printf("D: %d\n", d);
 	int id = 0;
 	Point point(id, coordinates);
 	id++;
@@ -373,16 +371,7 @@ int main (int argc, char **argv) {
     i += 4;
   }
 
-	Point x = dataset[0];
-	float y = x.getCoordinate(0);
-	// printf("Here\n");
-
-	// for (int a = 0; a < rows; a++) {
-	// 		printf("%f %f %f %f\n", dataset[a].getCoordinate(0),
-	// 			dataset[a].getCoordinate(1), dataset[a].getCoordinate(2),
-	// 			dataset[a].getCoordinate(3));
-  //
-	// }
+	printf("Dataset size: %d\n", dataset.size());
 
 	kmeans(dataset, k);
 }
