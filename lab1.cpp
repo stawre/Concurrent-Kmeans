@@ -147,8 +147,7 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 				Point p = centroids[i].getPoint(m);
 				sum += p.getCoordinate(j);
 			}
-			centroids[i].setCoordinate(j, sum / total_
-				points);
+			centroids[i].setCoordinate(j, sum / total_points);
 		}
 		retval.push_back(centroids[i]);
 	}
