@@ -122,7 +122,7 @@ public:
 
 };
 
-vector<Centroid> randomCentroids(vector<Point> points, int k) {
+vector<Centroid> randomCentroids(vector<Point>& points, int k) {
 	vector<Centroid> retval;
 	int size = points.size();
 	vector<int> cache;
@@ -197,11 +197,11 @@ void findNearestCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 	}
 }
 
-vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> centroids) {
+void averageLabeledCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 	int d = centroids[1].getD();
 	//int total_points = centroids[1].getSize();
 	//printf("Total Points: %d\n", total_points);
-	vector<Centroid> retval;
+	// vector<Centroid> retval;
 
 	// printf("%f \n", centroids[0].getCoordinate(0));
 
@@ -218,12 +218,12 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 			// printf("Coordinate: %f\n", sum / total_points);
 			centroids[i].setCoordinate(j, sum / total_points);
 		}
-		retval.push_back(centroids[i]);
+		// retval.push_back(centroids[i]);
 	}
 
 	// printf("%f \n", centroids[0].getCoordinate(0));
 
-	return retval;
+	// return retval;
 }
 
 bool converged(vector<Centroid> centroids, vector<Centroid> old_centroids) {
@@ -271,7 +271,7 @@ void* kmeans(void* arg) {
 		pthread_mutex_unlock(&mutex);
 
 		pthread_mutex_lock(&mutex);
-		centroids = averageLabeledCentroids(*dataset, centroids);
+		averageLabeledCentroids(*dataset, centroids);
 		pthread_mutex_unlock(&mutex);
 
 		pthread_barrier_wait(&barrier);
@@ -281,6 +281,10 @@ void* kmeans(void* arg) {
 		} else {
 			done = converged(centroids, old_centroids);
 		}
+	}
+
+	for (int i = 0; i < *dataset.size(); i++) {
+		printf("Point %d label: %d\n", *dataset[i].getId(), *dataset[i].getCentroid());
 	}
 
 	t = clock() - t;
