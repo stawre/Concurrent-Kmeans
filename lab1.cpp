@@ -131,7 +131,7 @@ vector<Centroid> randomCentroids(vector<Point> points, int k) {
 		LOOP:
 		int x = rand() % (size - 1) + 1;
 		if (find(cache.begin(), cache.end(), x) != cache.end())
-			goto LOOP;
+		goto LOOP;
 		points[x].setCentroid(i - 1);
 		Centroid centroid(id, points[x]);
 		id++;
@@ -183,7 +183,7 @@ void findNearestCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 					int temp = curr_point.getCentroid();
 					// printf("Here\n");
 					centroids[temp].erasePoint(curr_point.getId());
-						// printf("Removed\n");
+					// printf("Removed\n");
 				}
 				centroids[j].addPoint(curr_point);
 				curr_point.setCentroid(j);
@@ -235,7 +235,7 @@ bool converged(vector<Centroid> centroids, vector<Centroid> old_centroids) {
 			diff = abs(centroids[i].getCoordinate(j) - old_centroids[i].getCoordinate(j));
 			// printf("Diff: %f\n", diff);
 			if (diff > threshold)
-				return false;
+			return false;
 		}
 	}
 	return true;
@@ -251,12 +251,15 @@ void* kmeans(void* arg) {
 
 	bool done = false;
 	// for (int i = 0; i < k; i++) {
-  //               printf("Cluster %d center: ", i);
-  //               for (int j = 0; j < 4; j++) {
-  //                       printf("%f ", centroids[i].getCoordinate(j));
-  //               }
-  //               printf("\n");
-  //       }
+	//               printf("Cluster %d center: ", i);
+	//               for (int j = 0; j < 4; j++) {
+	//                       printf("%f ", centroids[i].getCoordinate(j));
+	//               }
+	//               printf("\n");
+	//       }
+
+	clock_t t;
+	t = clock();
 
 	while (!done) {
 		pthread_barrier_wait(&barrier);
@@ -279,6 +282,10 @@ void* kmeans(void* arg) {
 			done = converged(centroids, old_centroids);
 		}
 	}
+
+	t = clock() - t;
+	double time_taken = ((double) t) / CLOCKS_PER_SEC;
+	printf("Time taken by kmeans: %f seconds\n", time_taken);
 
 	// printf("Centroid 0 size %d", centroids[0].getSize());
 	printf("Converged in %d iterations\n", iters);
@@ -363,7 +370,7 @@ int main (int argc, char **argv) {
 		{
 			d++;
 			x = stof(s);
-        	// printf("%f ", x);
+			// printf("%f ", x);
 			coordinates.push_back(x);
 		}
 	}
@@ -388,9 +395,6 @@ int main (int argc, char **argv) {
 
 	// printf("Dataset size: %d\n", dataset.size());
 
-	clock_t t;
-	t = clock();
-
 	pthread_t threads[workers];
 	pthread_barrier_init(&barrier, NULL, workers);
 	pthread_mutex_init(&mutex, NULL);
@@ -404,10 +408,6 @@ int main (int argc, char **argv) {
 	{
 		pthread_join(threads[i], NULL);
 	}
-
-	t = clock() - t;
-	double time_taken = ((double) t) / CLOCKS_PER_SEC;
-	printf("Time taken by kmeans: %f seconds\n", time_taken);
 
 	// kmeans(dataset, k);
 }
