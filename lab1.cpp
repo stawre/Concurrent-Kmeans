@@ -271,12 +271,13 @@ void* kmeans(void* arg) {
 		centroids = averageLabeledCentroids(*dataset, centroids);
 		pthread_mutex_unlock(&mutex);
 
+		pthread_barrier_wait(&barrier);
+
 		if (iterations > 0) {
 			done = iters > iterations || converged(centroids, old_centroids);
 		} else {
 			done = converged(centroids, old_centroids);
 		}
-		pthread_barrier_wait(&barrier);
 	}
 
 	// printf("Centroid 0 size %d", centroids[0].getSize());
@@ -399,14 +400,14 @@ int main (int argc, char **argv) {
 		pthread_create(&threads[i], NULL, kmeans, &dataset);
 	}
 
-	t = clock() - t;
-	double time_taken = ((double) t) / CLOCKS_PER_SEC;
-	printf("Time taken by kmeans: %f seconds\n", time_taken);
-
 	for (i = 0; i < workers; i++)
 	{
 		pthread_join(threads[i], NULL);
 	}
+
+	t = clock() - t;
+	double time_taken = ((double) t) / CLOCKS_PER_SEC;
+	printf("Time taken by kmeans: %f seconds\n", time_taken);
 
 	// kmeans(dataset, k);
 }
