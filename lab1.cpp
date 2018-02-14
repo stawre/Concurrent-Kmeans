@@ -19,6 +19,9 @@ int iterations;
 int workers;
 char* input;
 
+pthread_barrier_t barrier;
+pthread_mutex_t mutex;
+
 class Point {
 private:
 	int id;
@@ -256,17 +259,24 @@ void* kmeans(void* arg) {
   //       }
 
 	while (!done) {
+		pthread_barrier_wait(&barrier);
 		old_centroids = centroids;
 		iters++;
 
+		pthread_mutex_lock(&mutex);
 		findNearestCentroids(*dataset, centroids);
+		pthread_mutex_unlock(&mutex);
+
+		pthread_mutex_lock(&mutex);
 		centroids = averageLabeledCentroids(*dataset, centroids);
+		pthread_mutex_unlock(&mutex);
 
 		if (iterations > 0) {
 			done = iters > iterations || converged(centroids, old_centroids);
 		} else {
 			done = converged(centroids, old_centroids);
 		}
+		pthread_barrier_wait(&barrier);
 	}
 
 	// printf("Centroid 0 size %d", centroids[0].getSize());
@@ -381,6 +391,8 @@ int main (int argc, char **argv) {
 	t = clock();
 
 	pthread_t threads[workers];
+	pthread_barrier_init(&barrier, NULL, workers);
+	pthread_mutex_init(&mutex, NULL);
 
 	for (i = 0; i < workers; i++)
 	{
