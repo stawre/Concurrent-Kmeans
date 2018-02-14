@@ -8,6 +8,8 @@
 #include <string>
 #include <fstream>
 #include <algorithm>
+#include <time.h>
+#include <pthread.h>
 
 using namespace std;
 
@@ -21,11 +23,11 @@ class Point {
 private:
 	int id;
 	int centroid_id = -1;
-	vector<float> coordinates;
+	vector<double> coordinates;
 
 public:
 
-	Point(int id, vector<float> coordinates) {
+	Point(int id, vector<double> coordinates) {
 		this->id = id;
 		int size = coordinates.size();
 		for(int i = 0; i < size; i++) {
@@ -33,11 +35,11 @@ public:
 		}
 	}
 
-	float getDimensionsCount() {
+	double getDimensionsCount() {
 		return coordinates.size();
 	}
 
-	float getCoordinate(int index) {
+	double getCoordinate(int index) {
 		return coordinates[index];
 	}
 
@@ -58,7 +60,7 @@ class Centroid {
 private:
 	int id;
 	vector<Point> points;
-	vector<float> coordinates;
+	vector<double> coordinates;
 
 public:
 	Centroid(int id, Point point) {
@@ -75,11 +77,11 @@ public:
 		return points[index];
 	}
 
-	float getCoordinate(int index) {
+	double getCoordinate(int index) {
 		return coordinates[index];
 	}
 
-	void setCoordinate(int index, float coordinate) {
+	void setCoordinate(int index, double coordinate) {
 		coordinates[index] = coordinate;
 	}
 
@@ -147,8 +149,8 @@ void findNearestCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 	for (int i = 0; i < total_points; i++) {
 		Point curr_point = points[i];
 
-		float sum_diff = 0;
-		float min;
+		double sum_diff = 0;
+		double min;
 
 		for (int j = 0; j < total_coordinates; j++) {
 			// printf("Pow: %f %f\n", centroids[0].getCoordinate(j), curr_point.getCoordinate(j));
@@ -160,8 +162,8 @@ void findNearestCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 		// printf("Min: %f\n", min);
 
 		for (int j = 1; j < k; j++) {
-			float dist;
-			float sum = 0;
+			double dist;
+			double sum = 0;
 
 			for(int m = 0; m < total_coordinates; m++) {
 				// printf("Pow: %f %f\n", centroids[j].getCoordinate(m), curr_point.getCoordinate(m));
@@ -177,7 +179,7 @@ void findNearestCentroids(vector<Point>& points, vector<Centroid>& centroids) {
 				if (curr_point.getCentroid() != -1) {
 					int temp = curr_point.getCentroid();
 					// printf("Here\n");
-					if (centroids[temp].erasePoint(curr_point.getId()))
+					centroids[temp].erasePoint(curr_point.getId());
 						// printf("Removed\n");
 				}
 				centroids[j].addPoint(curr_point);
@@ -204,7 +206,7 @@ vector<Centroid> averageLabeledCentroids(vector<Point> points, vector<Centroid> 
 		int total_points = centroids[i].getSize();
 		// printf("Total Points: %d\n", total_points);
 		for (int j = 0; j < d; j++) {
-			float sum = 0;
+			double sum = 0;
 			for (int m = 0; m < total_points; m++) {
 				Point p = centroids[i].getPoint(m);
 				// printf("%f + ", p.getCoordinate(j));
@@ -236,8 +238,10 @@ bool converged(vector<Centroid> centroids, vector<Centroid> old_centroids) {
 	return true;
 }
 
-void kmeans(vector<Point> dataset, int k) {
-	vector<Centroid> centroids = randomCentroids(dataset, k);
+void* kmeans(void* arg) {
+	vector<Point>* dataset;
+	dataset = (vector<Point> *) arg;
+	vector<Centroid> centroids = randomCentroids(*dataset, k);
 
 	int iters = 0;
 	vector<Centroid> old_centroids;
@@ -255,8 +259,8 @@ void kmeans(vector<Point> dataset, int k) {
 		old_centroids = centroids;
 		iters++;
 
-		findNearestCentroids(dataset, centroids);
-		centroids = averageLabeledCentroids(dataset, centroids);
+		findNearestCentroids(*dataset, centroids);
+		centroids = averageLabeledCentroids(*dataset, centroids);
 
 		if (iterations > 0) {
 			done = iters > iterations || converged(centroids, old_centroids);
@@ -295,27 +299,27 @@ int main (int argc, char **argv) {
 	while ((c = getopt_long(argc, argv, "i:w:t:n:c:", long_options, &option_index)) != -1) {
 		switch (c) {
 			case 'i':
-				input = optarg;
-				break;
+			input = optarg;
+			break;
 
 			case 'w':
-				workers = atoi(optarg);
-				break;
+			workers = atoi(optarg);
+			break;
 
 			case 't':
-				threshold = atof(optarg);
-				break;
+			threshold = atof(optarg);
+			break;
 
 			case 'n':
-				iterations = atoi(optarg);
-				break;
+			iterations = atoi(optarg);
+			break;
 
 			case 'c':
-				k = atoi(optarg);
-				break;
+			k = atoi(optarg);
+			break;
 
 			default:
-				abort();
+			abort();
 		}
 	}
 
@@ -335,43 +339,62 @@ int main (int argc, char **argv) {
 	// printf("Rows: %d\n", rows);
 
 	vector<Point> dataset;
-			vector<float> coordinates;
-					int d;
+	vector<double> coordinates;
+	int d;
 
 
 	while (getline(inFile, line)) {
 		istringstream iss(line);
-		float x;
+		double x;
 		iss >> x;
 		d = 0;
 		while(iss >> s)
-        {
-        	d++;
-        	x = stof(s);
+		{
+			d++;
+			x = stof(s);
         	// printf("%f ", x);
-            coordinates.push_back(x);
-        }
+			coordinates.push_back(x);
+		}
 	}
 	int id = 0;
 	Point point(id, coordinates);
 	id++;
-  dataset.push_back(point);
-  int i = d;
-  while (i < d*rows) {
-	vector<float> c;
+	dataset.push_back(point);
+	int i = d;
+	while (i < d*rows) {
+		vector<double> c;
 
-  	for (int j = i; j < (i + d); j++) {
-    	c.push_back(dataset[0].getCoordinate(j));
-    }
+		for (int j = i; j < (i + d); j++) {
+			c.push_back(dataset[0].getCoordinate(j));
+		}
 
-    Point point(id, c);
+		Point point(id, c);
 		id++;
-    dataset.push_back(point);
+		dataset.push_back(point);
 
-    i += 4;
-  }
+		i += 4;
+	}
 
-	printf("Dataset size: %d\n", dataset.size());
+	// printf("Dataset size: %d\n", dataset.size());
 
-	kmeans(dataset, k);
+	clock_t t;
+	t = clock();
+
+	pthread_t threads[workers];
+
+	for (i = 0; i < workers; i++)
+	{
+		pthread_create(&threads[i], NULL, kmeans, &dataset);
+	}
+
+	t = clock() - t;
+	double time_taken = ((double) t) / CLOCKS_PER_SEC;
+	printf("Time taken by kmeans: %f seconds\n", time_taken);
+
+	for (i = 0; i < workers; i++)
+	{
+		pthread_join(threads[i], NULL);
+	}
+
+	// kmeans(dataset, k);
 }
