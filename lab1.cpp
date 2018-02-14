@@ -283,7 +283,7 @@ void* kmeans(void* arg) {
 		}
 	}
 
-	for (int i = 0; i < *dataset.size(); i++) {
+	for (int i = 0; i < dataset->size(); i++) {
 		printf("Point %d label: %d\n", *dataset[i].getId(), *dataset[i].getCentroid());
 	}
 
