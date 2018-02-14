@@ -283,8 +283,10 @@ void* kmeans(void* arg) {
 		}
 	}
 
-	for (int i = 0; i < dataset->size(); i++) {
-		printf("Point %d label: %d\n", dataset[i].getId(), dataset[i].getCentroid());
+	vector<Point> data_copy = *dataset;
+
+	for (int i = 0; i < data_copy.size(); i++) {
+		printf("Point %d label: %d\n", data_copy[i].getId(), data_copy[i].getCentroid());
 	}
 
 	t = clock() - t;
