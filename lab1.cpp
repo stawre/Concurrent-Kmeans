@@ -284,7 +284,7 @@ void* kmeans(void* arg) {
 	}
 
 	for (int i = 0; i < dataset->size(); i++) {
-		printf("Point %d label: %d\n", dataset[i]->getId(), dataset[i]->getCentroid());
+		printf("Point %d label: %d\n", *dataset[i]->getId(), *dataset[i]->getCentroid());
 	}
 
 	t = clock() - t;
