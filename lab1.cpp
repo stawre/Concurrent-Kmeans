@@ -126,6 +126,11 @@ vector<Point> dataset;
 vector<Centroid> centroids;
 vector<vector<Point>> partitions;
 
+typedef struct thread_data {
+		int i;
+		vector<Point> partition;
+} data_t;
+
 void randomCentroids() {
 	vector<Centroid> retval;
 	int size = dataset.size();
@@ -154,21 +159,40 @@ void randomCentroids() {
 
 
 void* findNearestCentroids(void *arg) {
-	vector<Point>* dataset;
-	dataset = (vector<Point> *) arg;
+	int a;
+	vector<Point> dataset ;
+	data_t* my_data;
+
+	printf("Hello 0\n");
+
+	my_data = (data_t *) arg;
+	a = my_data->i;
+	printf("i \n");
+	dataset = my_data->partition;
+
+	printf("Hey \n");
+
 	int total_points = dataset.size();
 	int total_coordinates = dataset[1].getDimensionsCount();
 	// printf("Total Points: %d\n", total_points);
 	// printf("Total Coordinates: %d\n", total_coordinates);
+
+	printf("Hello 1\n");
 
 	for (int i = 0; i < total_points; i++) {
 		double sum_diff = 0;
 		double min;
 		int index = 0;
 
+		printf("Hello 2\n");
+
 		for (int j = 0; j < total_coordinates; j++) {
+			pthread_mutex_lock(&mutex);
 			sum_diff += pow(centroids[0].getCoordinate(j) - dataset[i].getCoordinate(j), 2.0);
+			pthread_mutex_unlock(&mutex);
 		}
+
+		printf("Hello 3\n");
 
 		min = sqrt(sum_diff);
 
@@ -177,7 +201,9 @@ void* findNearestCentroids(void *arg) {
 			sum_diff = 0;
 
 			for(int m = 0; m < total_coordinates; m++) {
+				pthread_mutex_lock(&mutex);
 				sum_diff += pow(centroids[j].getCoordinate(m) - dataset[i].getCoordinate(m), 2.0);
+				pthread_mutex_unlock(&mutex);
 			}
 
 			dist = sqrt(sum_diff);
@@ -191,16 +217,23 @@ void* findNearestCentroids(void *arg) {
 		// printf("Centroid size: %d\n", centroids[0].getSize());
 		if (index != dataset[i].getCentroid()) {
 			if (dataset[i].getCentroid() != -1) {
+				pthread_mutex_lock(&mutex);
 				int c_id = dataset[i].getCentroid();
 				// printf("Here\n");
 				centroids[c_id].erasePoint(dataset[i].getId());
+				pthread_mutex_unlock(&mutex);
 				// printf("Removed\n");
 			}
 	
+			pthread_mutex_lock(&mutex);
 			centroids[index].addPoint(dataset[i]);
 			dataset[i].setCentroid(index);
+			pthread_mutex_unlock(&mutex);
 		}
 	}
+	pthread_mutex_lock(&mutex);
+	partitions[a] = dataset;
+	pthread_mutex_unlock(&mutex);
 }
 
 void averageLabeledCentroids() {
@@ -253,6 +286,7 @@ void parallel_solution() {
 
 	int counter = 0;
 
+
 	for (int i = 0; i < workers; i++) {
 		vector<Point> p;
 		for (int j = 0; j < per_part; j++) {
@@ -260,7 +294,7 @@ void parallel_solution() {
 		}
 		partitions.push_back(p);
 	}
-
+	
 	int rem = total_points % workers;
 
 	if (rem != 0 && counter < total_points) {
@@ -269,16 +303,16 @@ void parallel_solution() {
 		}
 	}
 
-	typedef struct thread_data {
-		int i;
-		vector<Point> partition;
-	} data_t;
-
 	pthread_t threads[workers];
+	data_t t_data[workers];
+	
+	for (int i = 0; i < workers; i++) {
+		t_data[i].i = i;
+		t_data[i].partition = partitions[i];
+	}
 
-	for (int i = 0; i < workers; i++)
-	{
-		pthread_create(&threads[i], NULL, findNearestCentroids, partitions[i]);
+	for (int i = 0; i < workers; i++) {
+		pthread_create(&threads[i], NULL, findNearestCentroids, &t_data[i]);
 	}
 
 	for (int i = 0; i < workers; i++)
@@ -298,7 +332,7 @@ void kmeans() {
 	bool done = false;
 
 	clock_t t;
-	t = clock();
+	t = clock();	
 
 	while (!done) {
 		// pthread_barrier_wait(&barrier);
@@ -306,14 +340,16 @@ void kmeans() {
 		iters++;
 
 		// pthread_mutex_lock(&mutex);
-		findNearestCentroids(dataset);
+		printf("Here 0\n");
+		parallel_solution();
 		// pthread_mutex_unlock(&mutex);
+		printf("Here 1\n");
 
 		// pthread_mutex_lock(&mutex);
 		averageLabeledCentroids();
 		// pthread_mutex_unlock(&mutex);
 
-		// pthread_barrier_wait(&barrier);
+		pthread_barrier_wait(&barrier);
 		if (iterations > 0) {
 			done = iters > iterations || converged(old_centroids);
 		} else {
@@ -451,8 +487,8 @@ int main (int argc, char **argv) {
 
 	// printf("Dataset size: %d\n", dataset.size());
 
-	// pthread_barrier_init(&barrier, NULL, workers);
-	// pthread_mutex_init(&mutex, NULL);
+	pthread_barrier_init(&barrier, NULL, workers);
+	pthread_mutex_init(&mutex, NULL);
 
 	kmeans();
 }
