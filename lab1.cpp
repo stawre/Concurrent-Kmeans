@@ -247,17 +247,21 @@ void averageLabeledCentroids() {
 	for (int i = 0; i < k; i++) {
 		int total_points = centroids[i].getSize();
 		// printf("Total Points: %d\n", total_points);
+		printf("Average 1\n");
 		for (int j = 0; j < d; j++) {
 			double sum = 0;
+			printf("Average 2\n");
 			for (int m = 0; m < total_points; m++) {
 				Point p = centroids[i].getPoint(m);
 				// printf("%f + ", p.getCoordinate(j));
 				sum = sum + p.getCoordinate(j);
 			}
+			printf("Average 3\n");
 			// printf("Coordinate: %f\n", sum / total_points);
 			centroids[i].setCoordinate(j, sum / total_points);
 		}
 		// retval.push_back(centroids[i]);
+		printf("Average 4\n");
 	}
 
 	// printf("%f \n", centroids[0].getCoordinate(0));
@@ -319,6 +323,20 @@ void parallel_solution() {
 	{
 		pthread_join(threads[i], NULL);
 	}
+
+	counter = 0;
+
+	for (int i = 0; i < workers; i++) {
+		for (int j = 0; j < per_part; j++) {
+			dataset[counter++] = partitions[i][j];
+		}
+	}
+
+	if (rem != 0 && counter < total_points) {
+                for (int i = 0; i < rem; i++) {
+                	dataset[counter++] = partitions[i][per_part];
+                }
+        }
 }
 
 void kmeans() {
@@ -348,8 +366,10 @@ void kmeans() {
 		// pthread_mutex_lock(&mutex);
 		averageLabeledCentroids();
 		// pthread_mutex_unlock(&mutex);
+		printf("Here 2\n");
 
 		pthread_barrier_wait(&barrier);
+		printf("Here 3\n");
 		if (iterations > 0) {
 			done = iters > iterations || converged(old_centroids);
 		} else {
