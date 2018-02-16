@@ -158,41 +158,28 @@ void randomCentroids() {
 }
 
 
-void* findNearestCentroids(void *arg) {
-	int a;
-	vector<Point> dataset ;
-	data_t* my_data;
-
-	printf("Hello 0\n");
-
-	my_data = (data_t *) arg;
-	a = my_data->i;
-	printf("i \n");
-	dataset = my_data->partition;
-
-	printf("Hey \n");
-
-	int total_points = dataset.size();
-	int total_coordinates = dataset[1].getDimensionsCount();
+void findNearestCentroids(vector<Point>& my_dataset, int a) {
+	int total_points = my_dataset.size();
+	int total_coordinates = my_dataset[1].getDimensionsCount();
 	// printf("Total Points: %d\n", total_points);
 	// printf("Total Coordinates: %d\n", total_coordinates);
 
-	printf("Hello 1\n");
+	// printf("Hello 1\n");
 
 	for (int i = 0; i < total_points; i++) {
 		double sum_diff = 0;
 		double min;
 		int index = 0;
 
-		printf("Hello 2\n");
+		// printf("Hello 2\n");
 
 		for (int j = 0; j < total_coordinates; j++) {
 			pthread_mutex_lock(&mutex);
-			sum_diff += pow(centroids[0].getCoordinate(j) - dataset[i].getCoordinate(j), 2.0);
+			sum_diff += pow(centroids[0].getCoordinate(j) - my_dataset[i].getCoordinate(j), 2.0);
 			pthread_mutex_unlock(&mutex);
 		}
 
-		printf("Hello 3\n");
+		// printf("Hello 3\n");
 
 		min = sqrt(sum_diff);
 
@@ -202,7 +189,7 @@ void* findNearestCentroids(void *arg) {
 
 			for(int m = 0; m < total_coordinates; m++) {
 				pthread_mutex_lock(&mutex);
-				sum_diff += pow(centroids[j].getCoordinate(m) - dataset[i].getCoordinate(m), 2.0);
+				sum_diff += pow(centroids[j].getCoordinate(m) - my_dataset[i].getCoordinate(m), 2.0);
 				pthread_mutex_unlock(&mutex);
 			}
 
@@ -215,29 +202,29 @@ void* findNearestCentroids(void *arg) {
 		}
 		// printf("Index: %d\n", index);
 		// printf("Centroid size: %d\n", centroids[0].getSize());
-		if (index != dataset[i].getCentroid()) {
-			if (dataset[i].getCentroid() != -1) {
+		if (index != my_dataset[i].getCentroid()) {
+			if (my_dataset[i].getCentroid() != -1) {
 				pthread_mutex_lock(&mutex);
-				int c_id = dataset[i].getCentroid();
+				int c_id = my_dataset[i].getCentroid();
 				// printf("Here\n");
-				centroids[c_id].erasePoint(dataset[i].getId());
+				centroids[c_id].erasePoint(my_dataset[i].getId());
 				pthread_mutex_unlock(&mutex);
 				// printf("Removed\n");
 			}
 	
 			pthread_mutex_lock(&mutex);
-			centroids[index].addPoint(dataset[i]);
-			dataset[i].setCentroid(index);
+			centroids[index].addPoint(my_dataset[i]);
 			pthread_mutex_unlock(&mutex);
+			my_dataset[i].setCentroid(index);
 		}
 	}
-	pthread_mutex_lock(&mutex);
-	partitions[a] = dataset;
-	pthread_mutex_unlock(&mutex);
+	// pthread_mutex_lock(&mutex);
+	partitions[a] = my_dataset;
+	// pthread_mutex_unlock(&mutex);
 }
 
-void averageLabeledCentroids() {
-	int d = centroids[1].getD();
+void averageLabeledCentroids(vector<Centroid>& my_centroids) {
+	int d = my_centroids[1].getD();
 	//int total_points = centroids[1].getSize();
 	//printf("Total Points: %d\n", total_points);
 	// vector<Centroid> retval;
@@ -245,20 +232,20 @@ void averageLabeledCentroids() {
 	// printf("%f \n", centroids[0].getCoordinate(0));
 
 	for (int i = 0; i < k; i++) {
-		int total_points = centroids[i].getSize();
+		int total_points = my_centroids[i].getSize();
 		// printf("Total Points: %d\n", total_points);
-		printf("Average 1\n");
+		// printf("Average 1\n");
 		for (int j = 0; j < d; j++) {
 			double sum = 0;
-			printf("Average 2\n");
+			// printf("Average 2\n");
 			for (int m = 0; m < total_points; m++) {
-				Point p = centroids[i].getPoint(m);
+				Point p = my_centroids[i].getPoint(m);
 				// printf("%f + ", p.getCoordinate(j));
 				sum = sum + p.getCoordinate(j);
 			}
-			printf("Average 3\n");
+			// printf("Average 3\n");
 			// printf("Coordinate: %f\n", sum / total_points);
-			centroids[i].setCoordinate(j, sum / total_points);
+			my_centroids[i].setCoordinate(j, sum / total_points);
 		}
 		// retval.push_back(centroids[i]);
 		printf("Average 4\n");
@@ -274,14 +261,99 @@ bool converged(vector<Centroid> old_centroids) {
 	int d = centroids[0].getD();
 	double diff;
 	for (int i = 0; i < total; i++) {
+		printf("Converged 1\n");
 		for (int j = 0; j < d; j++) {
+			printf("%f\n", old_centroids[i].getCoordinate(j));
 			diff = abs(centroids[i].getCoordinate(j) - old_centroids[i].getCoordinate(j));
 			printf("Diff: %f\n", diff);
 			if (diff > threshold)
 				return false;
 		}
+		printf("Converged 2\n");
 	}
 	return true;
+}
+
+void* kmeans(void *arg) {
+	// vector<Point>* dataset;
+	// dataset = (vector<Point> *) arg;
+	int a;
+	vector<Point> t_dataset ;
+	data_t* my_data;
+
+	my_data = (data_t *) arg;
+	a = my_data->i;
+	t_dataset = my_data->partition;
+
+	// randomCentroids();
+
+	int iters = 0;
+
+	vector<Centroid> old_centroids;
+
+	bool done = false;
+
+	clock_t t;
+	t = clock();	
+
+	while (!done) {
+		pthread_barrier_wait(&barrier);
+		pthread_mutex_lock(&mutex);
+		old_centroids = centroids;
+		pthread_mutex_unlock(&mutex);
+
+		pthread_mutex_lock(&mutex);
+		iters++;
+		pthread_mutex_unlock(&mutex);
+
+		// pthread_mutex_lock(&mutex);
+		printf("Here 0\n");
+		findNearestCentroids(t_dataset, a);
+		// pthread_mutex_unlock(&mutex);
+		printf("Here 1\n");
+
+		// pthread_barrier_wait(&barrier);
+		pthread_mutex_lock(&mutex);
+		averageLabeledCentroids(centroids);
+		pthread_mutex_unlock(&mutex);
+
+		printf("Here 2\n");
+
+		// pthread_barrier_wait(&barrier);
+		// printf("Here 3\n");
+		pthread_mutex_lock(&mutex);
+		if (iterations > 0) {
+			printf("Here 4\n");
+			done = iters > iterations || converged(old_centroids);
+		} else {
+			done = converged(old_centroids);
+		}
+		pthread_mutex_unlock(&mutex);
+		pthread_barrier_wait(&barrier);
+	}
+
+	// vector<Point> data_copy = dataset;
+
+	// for (int i = 0; i < data_copy.size(); i++) {
+	// 	printf("Point %d label: %d\n", data_copy[i].getId(), data_copy[i].getCentroid());
+	// }
+
+	t = clock() - t;
+	double time_taken = ((double) t) / CLOCKS_PER_SEC;
+	printf("Time taken by kmeans: %f seconds\n", time_taken);
+
+	// printf("Centroid 0 size %d", centroids[0].getSize());
+	printf("Converged in %d iterations\n", iters);
+
+	int d = centroids[0].getD();
+
+	for (int i = 0; i < k; i++) {
+		printf("Cluster %d center: ", i);
+		for (int j = 0; j < d; j++) {
+			printf("%f ", centroids[i].getCoordinate(j));
+		}
+		printf("\n");
+	}
 }
 
 void parallel_solution() {
@@ -316,7 +388,7 @@ void parallel_solution() {
 	}
 
 	for (int i = 0; i < workers; i++) {
-		pthread_create(&threads[i], NULL, findNearestCentroids, &t_data[i]);
+		pthread_create(&threads[i], NULL, kmeans, &t_data[i]);
 	}
 
 	for (int i = 0; i < workers; i++)
@@ -337,68 +409,6 @@ void parallel_solution() {
                 	dataset[counter++] = partitions[i][per_part];
                 }
         }
-}
-
-void kmeans() {
-	// vector<Point>* dataset;
-	// dataset = (vector<Point> *) arg;
-	randomCentroids();
-
-	int iters = 0;
-	vector<Centroid> old_centroids;
-
-	bool done = false;
-
-	clock_t t;
-	t = clock();	
-
-	while (!done) {
-		// pthread_barrier_wait(&barrier);
-		old_centroids = centroids;
-		iters++;
-
-		// pthread_mutex_lock(&mutex);
-		printf("Here 0\n");
-		parallel_solution();
-		// pthread_mutex_unlock(&mutex);
-		printf("Here 1\n");
-
-		// pthread_mutex_lock(&mutex);
-		averageLabeledCentroids();
-		// pthread_mutex_unlock(&mutex);
-		printf("Here 2\n");
-
-		pthread_barrier_wait(&barrier);
-		printf("Here 3\n");
-		if (iterations > 0) {
-			done = iters > iterations || converged(old_centroids);
-		} else {
-			done = converged(old_centroids);
-		}
-	}
-
-	vector<Point> data_copy = dataset;
-
-	// for (int i = 0; i < data_copy.size(); i++) {
-	// 	printf("Point %d label: %d\n", data_copy[i].getId(), data_copy[i].getCentroid());
-	// }
-
-	t = clock() - t;
-	double time_taken = ((double) t) / CLOCKS_PER_SEC;
-	printf("Time taken by kmeans: %f seconds\n", time_taken);
-
-	// printf("Centroid 0 size %d", centroids[0].getSize());
-	printf("Converged in %d iterations\n", iters);
-
-	int d = centroids[0].getD();
-
-	for (int i = 0; i < k; i++) {
-		printf("Cluster %d center: ", i);
-		for (int j = 0; j < d; j++) {
-			printf("%f ", centroids[i].getCoordinate(j));
-		}
-		printf("\n");
-	}
 }
 
 int main (int argc, char **argv) {
@@ -510,5 +520,7 @@ int main (int argc, char **argv) {
 	pthread_barrier_init(&barrier, NULL, workers);
 	pthread_mutex_init(&mutex, NULL);
 
-	kmeans();
+	randomCentroids();
+
+	parallel_solution();
 }
